@@ -1,0 +1,20 @@
+{
+    "name": "kalani/validation-rule-generator",
+    "description": "Automatically generate validation rules based on table schema",
+    "authors": [
+        {
+            "name": "Joel Hatch",
+            "email": "joel@kalani.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "illuminate/support": "4.0.x"
+    },
+    "autoload": {
+        "psr-0": {
+            "Kalani\\ValidationRuleGenerator": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
