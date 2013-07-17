@@ -66,7 +66,7 @@ class ValidationRuleGenerator
         }
 
         $userRules = $this->explodeTableRules($rules);
-        $merged = array_merge_recursive($tableRules, $userRules);
+        $merged = array_replace_recursive($tableRules, $userRules);
         return $this->implodeTableRules($merged);
     }
 
