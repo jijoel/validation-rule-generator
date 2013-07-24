@@ -4,8 +4,6 @@ namespace Kalani\ValidationRuleGenerator;
 
 use Illuminate\Support\Facades\DB;
 
-
-
 class ValidationRuleGenerator
 {
     protected $schemaManager;
@@ -29,6 +27,11 @@ class ValidationRuleGenerator
         }
 
         throw new \InvalidArgumentException;
+    }
+
+    public function make()
+    {
+        return $this;
     }
 
 
@@ -98,15 +101,15 @@ class ValidationRuleGenerator
     }
 
 
-    public function getUniqueRules($rules, $id)
+    public function getUniqueRules($rules, $id, $idColumn='id')
     {
         if (! is_array($rules)) {
-            return $this->getColumnUniqueRules($rules, $id);
+            return $this->getColumnUniqueRules($rules, $id, $idColumn);
         }
 
         $return = array();
         foreach ($rules as $key => $value) {
-            $return[$key] = $this->getColumnUniqueRules($value, $id);
+            $return[$key] = $this->getColumnUniqueRules($value, $id, $idColumn);
         }
         return $return;
     }
@@ -115,7 +118,7 @@ class ValidationRuleGenerator
      * Given a set of rules, and an id for a current record,
      * returns a string with any unique rules skipping the current record. 
      */
-    public function getColumnUniqueRules($rules, $id)
+    public function getColumnUniqueRules($rules, $id, $idColumn)
     {
         $upos = strpos($rules, 'unique:');
         if ($upos === False) {
@@ -124,11 +127,11 @@ class ValidationRuleGenerator
 
         $pos = strpos($rules, '|', $upos);
         if ($pos === False) {       // 'unique' is the last rule; append the id
-            return $rules . ',' . $id;
+            return $rules . ',' . $id . ',' . $idColumn;
         }
 
         // inject the id
-        return substr($rules, 0, $pos) . ',' . $id . substr($rules, $pos);
+        return substr($rules, 0, $pos) . ',' . $id . ',' . $idColumn . substr($rules, $pos);
     }
 
     /**
@@ -229,7 +232,12 @@ class ValidationRuleGenerator
         $columns = $this->schemaManager->listTableColumns($table);
         foreach($columns as $column) {
             $colName = $column->getName();
-            $rules[$colName] = $this->getColumnRuleArray($column);
+
+            // Add generated rules from the database for this column, if any found
+            $columnRules = $this->getColumnRuleArray($column);
+            if ($columnRules) {
+                $rules[$colName] = $this->getColumnRuleArray($column);                
+            }
 
             // Add index rules for this column, if any are found
             $indexRules = $this->getIndexRuleArray($table, $colName);
@@ -284,10 +292,5 @@ class ValidationRuleGenerator
             }
         }
         return $indexArray;
-    }
-
-    public static function greeting()
-    {
-        return 'What up, dawg?';
     }
 }
