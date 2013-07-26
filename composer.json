@@ -1,6 +1,7 @@
 {
     "name": "kalani/validation-rule-generator",
-    "description": "Automatically generate validation rules based on table schema",
+    "description": "Laravel 4 class to automatically generate validation rules based on table schema",
+    "keywords": ["laravel", "validation", "schema"],
     "authors": [
         {
             "name": "Joel Hatch",
