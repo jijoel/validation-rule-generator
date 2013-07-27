@@ -4,7 +4,9 @@ This Laravel 4 package will automatically generate laravel validation rules, bas
     * One (given) table
     * One (given) column from a (given) table
 
-You can also pass in custom rules, which will override the automatically generated rules.
+Pass in custom rules to override the automatically generated rules.
+
+You can use the results from the ValidationRuleGenerator directly in a validator, or you can copy them from an Artisan command, and manually enter them into your models.
 
 
 
@@ -27,6 +29,25 @@ Finally, add the service provider to the providers array in `app\config\app.php`
 
 
 ## Usage
+
+#### Artisan Command
+
+`php artisan generate:rules` will generate rules for a given table or model. These rules will be printed in a format that you could copy directly to another php file. 
+
+On the command line, you can run the rule generator as follows:
+
+    php artisan generate:rules [--model="..."] [--table="..."] [--all]
+
+One of these parameters is required:
+
+    --all               Output table information for all tables in the database
+    --table=table_name  Returns rules for the given table
+    --model=ModelName   Returns rules for the given model (with overrides)
+
+If you pass in a `--model` parameter, the rule generator will generate rules for the model's table, and will then merge it with the model's $rules array. In cases of a conflict, the $rules array will take precedence.
+
+
+#### Pass directly into validator 
 
 Call `ValidationRuleGenerator::getRules($table, $column, $rules, $id)`:
 
@@ -68,5 +89,4 @@ If you'd like validation rules for one column:
 
 Tests
 ------------
-Currently, I am not sure how to get testing to work for packages. Several tests were written before I changed this class to a package; they're included here for reference, but they don't currently work.
-
+Tests do not currently work.
