@@ -20,6 +20,12 @@ class ValidationRuleGeneratorServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
+		$this->registerGenerator();
+		$this->registerCommand();
+	}
+
+	protected function registerGenerator()
+	{
 		$this->app['validation-rule-generator'] = $this->app->share(function($app){
 			return new ValidationRuleGenerator;
 		});
@@ -29,7 +35,17 @@ class ValidationRuleGeneratorServiceProvider extends ServiceProvider {
 			$loader = \Illuminate\Foundation\AliasLoader::getInstance();
 			$loader->alias('ValidationRuleGenerator', 
 				'Kalani\ValidationRuleGenerator\Facades\ValidationRuleGenerator');
-		});		
+		});				
+	}
+
+	protected function registerCommand()
+	{
+		$this->app['validation-rule-generator-command'] = $this->app->share(function($app){
+			$generator = new ValidationRuleGenerator;
+			return new ValidationRuleGeneratorCommand($generator);
+		});
+
+		$this->commands('validation-rule-generator-command');
 	}
 
 	/**
