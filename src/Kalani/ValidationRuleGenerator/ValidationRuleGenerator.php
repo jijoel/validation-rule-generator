@@ -29,9 +29,9 @@ class ValidationRuleGenerator
         throw new \InvalidArgumentException;
     }
 
-    public function make()
+    public static function make()
     {
-        return $this;
+        return new static();
     }
 
 
@@ -116,9 +116,15 @@ class ValidationRuleGenerator
 
     /**
      * Given a set of rules, and an id for a current record,
-     * returns a string with any unique rules skipping the current record. 
+     * returns a string with any unique rules skipping the current record.
+     *
+     * @param  string         $rules    A laravel rule string 
+     * @param  string|integer $id       The id to skip
+     * @param  string         $idColumn The name of the column
+     *
+     * @return string The rules, including a string to skip the given id.
      */
-    public function getColumnUniqueRules($rules, $id, $idColumn)
+    public function getColumnUniqueRules($rules, $id, $idColumn='id')
     {
         $upos = strpos($rules, 'unique:');
         if ($upos === False) {
@@ -228,7 +234,6 @@ class ValidationRuleGenerator
      */
     protected function getTableRuleArray($table)
     {
-        $rules = array();
         $columns = $this->schemaManager->listTableColumns($table);
         foreach($columns as $column) {
             $colName = $column->getName();
@@ -287,7 +292,10 @@ class ValidationRuleGenerator
         $indexArray = array();
         $indexList = $this->schemaManager->listTableIndexes($table);
         foreach($indexList as $item) {
-            if(strpos($item->getName(), $column)!==False && count($item->getColumns())==1 && $item->isUnique()) {
+            // TODO: DO NOT rely on the name of the index to see if the column should be indexed
+            $cols = $item->getColumns();
+            if(strpos($cols, $column) !== false && count($cols)==1 && $item->isUnique()) {
+
                 $indexArray['unique'] = $table . ',' . $column;
             }
         }
