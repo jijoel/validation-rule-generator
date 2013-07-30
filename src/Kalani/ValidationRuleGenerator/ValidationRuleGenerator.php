@@ -292,9 +292,8 @@ class ValidationRuleGenerator
         $indexArray = array();
         $indexList = $this->schemaManager->listTableIndexes($table);
         foreach($indexList as $item) {
-            // TODO: DO NOT rely on the name of the index to see if the column should be indexed
             $cols = $item->getColumns();
-            if(strpos($cols, $column) !== false && count($cols)==1 && $item->isUnique()) {
+            if(in_array($column, $cols) !== false && count($cols)==1 && $item->isUnique()) {
 
                 $indexArray['unique'] = $table . ',' . $column;
             }
@@ -302,3 +301,4 @@ class ValidationRuleGenerator
         return $indexArray;
     }
 }
+
