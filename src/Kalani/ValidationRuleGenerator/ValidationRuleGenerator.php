@@ -14,6 +14,16 @@ class ValidationRuleGenerator
             DB::connection()->getDoctrineSchemaManager();
     }
 
+    /**
+     * Returns rules for the selected object
+     * 
+     * @param  string|object $table  The table or model for which to get rules
+     * @param  string $column        The column for which to get rules   
+     * @param  array $rules          Manual overrides for the automatically-generated rules
+     * @param  integer $id           An id number to ignore for unique fields (current id)
+     * 
+     * @return array                 Array of calculated rules for the given table/model
+     */
     public function getRules($table=Null, $column=Null, $rules=Null, $id=Null)
     {
         if ( ! $table == Null && $column == Null) {
@@ -56,13 +66,15 @@ class ValidationRuleGenerator
     /**
      * Returns all rules for a given table
      * 
-     * @param  string $table    The name of the table to analyze
+     * @param  string|object $table  The name of the table to analyze
      * @param  array  $rules    (optional) Additional (user) rules to include
      *                          These will override the automatically generated rules 
      * @return array  An associative array of columns and delimited string of rules
      */
     public function getTableRules($table, $rules = Null)
     {
+        $table = $this->getTableName($table);
+
         $tableRules = $this->getTableRuleArray($table);        
         if (is_null($rules)) {
             return $this->implodeTableRules($tableRules);
@@ -86,6 +98,7 @@ class ValidationRuleGenerator
         // TODO: Work with foreign keys for exists:table,column statements
 
         // Get an array of rules based on column data
+        $table = $this->getTableName($table);
         $col = DB::connection()->getDoctrineColumn($table, $column);
         $dbRuleArray = $this->getColumnRuleArray($col);
         $indexRuleArray = $this->getIndexRuleArray($table, $column);
@@ -299,6 +312,17 @@ class ValidationRuleGenerator
             }
         }
         return $indexArray;
+    }
+
+    protected function getTableName($table)
+    {
+        if (is_string($table))
+            return $table;
+
+        if (is_object($table) && method_exists($table, 'getTable'))
+            return $table->getTable();
+
+        throw new \InvalidArgumentException;
     }
 }
 

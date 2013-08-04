@@ -1,8 +1,11 @@
+Validation Rule Generator
+=============================
+
 This Laravel 4 package will automatically generate laravel validation rules, based on your schema. It can generate rules for:
 
-    * All tables in the database
-    * One (given) table
-    * One (given) column from a (given) table
+* All tables in the database
+* One (given) table
+* One (given) column from a (given) table
 
 Pass in custom rules to override the automatically generated rules.
 
@@ -14,10 +17,12 @@ You can use the results from the ValidationRuleGenerator directly in a validator
 
 Install the package via Composer. Edit your `composer.json` file to require `kalani/validation-rule-generator`.
 
-    "require": {
-        "laravel/framework": "4.0.*",
-        "kalani/validation-rule-generator": "dev-master"
-    }
+``` json
+"require": {
+    "laravel/framework": "4.0.*",
+    "kalani/validation-rule-generator": "dev-master"
+}
+```
 
 Next, update Composer from the terminal:
 
@@ -26,6 +31,13 @@ Next, update Composer from the terminal:
 Finally, add the service provider to the providers array in `app\config\app.php`:
 
     'Kalani\ValidationRuleGenerator\ValidationRuleGeneratorServiceProvider',
+
+There is already an alias set up for `ValidationRuleGenerator`, but if you would like to refer to it by a short, memorable name in your app, you can add another alias as follows:
+
+    'Rules' => 'Kalani\ValidationRuleGenerator\Facades\ValidationRuleGenerator',
+
+(We will use ValidationRuleGenerator and Rules interchangeably)
+
 
 
 ## Usage
@@ -49,9 +61,9 @@ If you pass in a `--model` parameter, the rule generator will generate rules for
 
 #### Pass directly into validator 
 
-Call `ValidationRuleGenerator::getRules($table, $column, $rules, $id)`:
+Call `ValidationRuleGenerator::getRules($table|$model, $column, $rules, $id)`:
 
-    * `$table`  The name of the table for which to get rules
+    * `$table`  The name of the table (or model object) for which to get rules
     * `$column` The name of the column
     * `$rules`  Custom rules (override automatically generated rules)
     * `$id`     Ignore unique rules for the given id
@@ -60,11 +72,11 @@ All of the parameters are optional. If you do not include any, the package will 
 
 To validate a table:
 
-    $valid = Validator::make(Input::all(), ValidationRuleGenerator::getRules($tableName));
+    $valid = Validator::make(Input::all(), Rules::getRules($tableName));
 
 To validate a table, ignoring a given id:
 
-    $valid = Validator::make(Input::all(), ValidationRuleGenerator::getRules($tableName, null, null, $id));
+    $valid = Validator::make(Input::all(), Rules::getRules($tableName, null, null, $id));
 
 
 ### Alternative Usage
@@ -87,6 +99,3 @@ If you'd like validation rules for one column:
     $rules = ValidationRuleGenerator::getColumnRules($table, $column);
 
 
-Tests
-------------
-Tests do not currently work.

@@ -185,6 +185,28 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
         $this->assertContains('15', $test['code']);
     }
 
+    public function testGetRulesWorksForModels()
+    {
+        $model = new ModelStub();
+
+        $this->assertEquals($this->ruleGenerator->getTableRules('foo'), 
+            $this->ruleGenerator->getTableRules($model));
+
+        $this->assertNotEquals($this->ruleGenerator->getTableRules('table'), 
+            $this->ruleGenerator->getTableRules($model));
+
+        $this->assertEquals($this->ruleGenerator->getRules('foo', 'col1'), 
+            $this->ruleGenerator->getRules($model, 'col1'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetRulesFailsWhenGivenBadValue()
+    {
+        $foo = $this->ruleGenerator->getTableRules(1); 
+    }
+
     /**
      * @expectedException \InvalidArgumentException
      */
@@ -312,21 +334,25 @@ class SchemaColCodeStub
 class SchemaIndexStub
 {
     public function getName() { return 'primary'; }
-    public function getColumns() { return 'col1'; }
+    public function getColumns() { return array('col1'); }
     public function isUnique() { return True; }
 }
 
 class SchemaIndexCol2Stub
 {
     public function getName() { return 'col2_index'; }
-    public function getColumns() { return 'col2'; }
+    public function getColumns() { return array('col2'); }
     public function isUnique() { return False; }
 }
 
 class SchemaIndexCodeStub
 {
     public function getName() { return 'code_index'; }
-    public function getColumns() { return 'code'; }
+    public function getColumns() { return array('code'); }
     public function isUnique() { return True; }    
 }
 
+class ModelStub
+{
+    public function getTable() { return 'foo'; }
+}
