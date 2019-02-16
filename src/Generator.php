@@ -5,7 +5,7 @@ namespace Jijoel\ValidationRuleGenerator;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
 
-class ValidationRuleGenerator
+class Generator
 {
     protected $schemaManager;
 

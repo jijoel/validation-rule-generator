@@ -7,7 +7,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use InvalidArgumentException;
 
-class ValidationRuleGeneratorCommand extends Command
+
+class MakeValidationCommand extends Command
 {
 
     /**
@@ -15,7 +16,7 @@ class ValidationRuleGeneratorCommand extends Command
      *
      * @var string
      */
-    protected $name = 'generate:rules';
+    protected $name = 'make:validation';
 
     /**
      * The console command description.
