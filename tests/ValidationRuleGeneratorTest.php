@@ -1,100 +1,88 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
+
 use Illuminate\Support\Facades\DB;
-use Kalani\ValidationRuleGenerator\ValidationRuleGenerator;
-use Mockery as m;
+use Jijoel\ValidationRuleGenerator\Generator;
 
 
-class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
+
+class ValidationRuleGeneratorTest extends TestCase
 {
-    protected $ruleGenerator;
-
-    public function setUp()
-    {
-        parent::setUp();
-        $this->setupApp();
-        $this->setupSchemaManager();
-
-        $this->ruleGenerator = new ValidationRuleGenerator();
-    }
-
-    public function tearDown()
-    {
-        m::close();
-    }
+    use Helpers;
 
     /**
      * Test to make sure we can pass in a schema manager
      */
     public function testShouldGetSchemaManager()
     {
-        $test = new ValidationRuleGenerator(Null);
+        $test = new Generator(Null);
         $result = print_r($test, true);
-        $this->assertContains('SchemaManagerStub Object', $result);
+        $this->assertStringContainsString('SchemaManagerStub Object', $result);
 
-        $test = new ValidationRuleGenerator('foo');
+        $test = new Generator('foo');
         $result = print_r($test, true);
-        $this->assertNotContains('SchemaManagerStub Object', $result);
-        $this->assertContains('foo', $result);
+        $this->assertStringNotContainsString('SchemaManagerStub Object', $result);
+        $this->assertStringContainsString('foo', $result);
     }
 
     public function testGetColumnRules()
     {
         $codeRules = $this->columnRules('code');
-        $this->assertContains('max:4', $codeRules);
-        $this->assertContains('required', $codeRules);
-        $this->assertContains('unique:foo,code', $codeRules);
+        $this->assertStringContainsString('max:4', $codeRules);
+        $this->assertStringContainsString('required', $codeRules);
+        $this->assertStringContainsString('unique:foo,code', $codeRules);
     }
 
     public function testGetColumnRulesIncludesUnique()
     {
-        $this->assertContains('unique',    $this->columnRules('code'));     
-        $this->assertContains('unique',    $this->columnRules('col1'));     
-        $this->assertNotContains('unique', $this->columnRules('col2'));   
+        $this->assertStringContainsString('unique',    $this->columnRules('code'));
+        $this->assertStringContainsString('unique',    $this->columnRules('col1'));
+        $this->assertStringNotContainsString('unique', $this->columnRules('col2'));
     }
 
     public function testUniqueIdsForColumn()
     {
         $rules = $this->ruleGenerator->getColumnRules('foo', 'code', Null);
         $test = $this->ruleGenerator->getColumnUniqueRules($rules, 12);
-        $this->assertContains('unique:foo,code,12,id', $test);
+        $this->assertStringContainsString('unique:foo,code,12,id', $test);
 
         $test = $this->ruleGenerator->getColumnUniqueRules($rules, 17, 'buzz');
-        $this->assertContains('unique:foo,code,17,buzz', $test);
+        $this->assertStringContainsString('unique:foo,code,17,buzz', $test);
 
         $test = $this->ruleGenerator->getUniqueRules($rules, 14);
-        $this->assertContains('unique:foo,code,14,id', $test);
+        $this->assertStringContainsString('unique:foo,code,14,id', $test);
 
         $rules = 'foo:bazz|unique:fizz,bazz|buzz';
         $test = $this->ruleGenerator->getUniqueRules($rules, 12);
         $this->assertEquals('foo:bazz|unique:fizz,bazz,12,id|buzz', $test);
     }
-    
+
 
     public function testGetColumnRulesIncludesRequired()
     {
-        $this->assertContains('required',    $this->columnRules('code'));   
-        $this->assertContains('required',    $this->columnRules('col1'));
-        $this->assertNotContains('required', $this->columnRules('col2'));
+        $this->assertStringContainsString('required',    $this->columnRules('code'));
+        $this->assertStringContainsString('required',    $this->columnRules('col1'));
+        $this->assertStringNotContainsString('required', $this->columnRules('col2'));
     }
 
     public function testGetColumnRulesIncludesMaxOnlyIfFound()
     {
-        $this->assertContains('max:', $this->columnRules('col1'));
-        $this->assertNotContains('max:', $this->columnRules('col2'));
+        $this->assertStringContainsString('max:', $this->columnRules('col1'));
+        $this->assertStringNotContainsString('max:', $this->columnRules('col2'));
     }
 
     public function testGetColumnRulesIncludesPassedInRule()
     {
         $r = $this->columnRules('code', array('bazz'));
-        $this->assertContains('bazz', $r);
+        $this->assertStringContainsString('bazz', $r);
     }
 
     public function testGetColumnRulesCanBeOverridden()
     {
-        $this->assertContains('max:4',$this->columnRules('code'));
-        $this->assertContains('max:2',$this->columnRules('code', array('max:2')));
-        $this->assertContains('unique:fizz,buzz',
+        $this->assertStringContainsString('max:4',$this->columnRules('code'));
+        $this->assertStringContainsString('max:2',$this->columnRules('code', array('max:2')));
+        $this->assertStringContainsString('unique:fizz,buzz',
             $this->columnRules('code', array('unique:fizz,buzz')));
     }
 
@@ -107,9 +95,9 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
     public function testGetTableRulesIncludesUnique()
     {
         $tableRules = $this->ruleGenerator->getTableRules('foo');
-        $this->assertContains('unique', $tableRules['code']);
-        $this->assertContains('unique', $tableRules['col1']);
-        $this->assertNotContains('unique', $tableRules['col2']);
+        $this->assertStringContainsString('unique', $tableRules['code']);
+        $this->assertStringContainsString('unique', $tableRules['col1']);
+        $this->assertStringNotContainsString('unique', $tableRules['col2']);
     }
 
     public function testGetTableRulesMatchColumnRules()
@@ -135,18 +123,18 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
 
         $r1 = $this->tableRules();
         $r2 = $this->tableRules($testRules);
-        $this->assertContains('unique:foo,code', $r1['code']);
-        $this->assertNotContains('unique:foo,code', $r2['code']);
-        $this->assertContains('unique:fizz,buzz', $r2['code']);
+        $this->assertStringContainsString('unique:foo,code', $r1['code']);
+        $this->assertStringNotContainsString('unique:foo,code', $r2['code']);
+        $this->assertStringContainsString('unique:fizz,buzz', $r2['code']);
     }
 
     public function testUniqueIdsForTable()
     {
         $rules = $this->ruleGenerator->getTableRules('foo', Null);
         $test = $this->ruleGenerator->getUniqueRules($rules, 12);
-        $this->assertContains('unique:foo,code,12,id', $test['code']);
+        $this->assertStringContainsString('unique:foo,code,12,id', $test['code']);
         $test = $this->ruleGenerator->getUniqueRules($rules, 14, 'bazz');
-        $this->assertContains('unique:foo,code,14,bazz', $test['code']);
+        $this->assertStringContainsString('unique:foo,code,14,bazz', $test['code']);
     }
 
     public function testGetAllTableRules()
@@ -158,7 +146,7 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
 
     public function testGetRulesReturnsCorrectStuff()
     {
-        $this->assertEquals($this->ruleGenerator->getRules(), 
+        $this->assertEquals($this->ruleGenerator->getRules(),
             $this->ruleGenerator->getAllTableRules());
 
         $this->assertEquals($this->ruleGenerator->getRules('table'),
@@ -176,85 +164,50 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
         );
         $test = $this->ruleGenerator->getRules('table', Null, $overrides);
         $this->assertArrayHasKey('bazz', $test);
-        $this->assertContains('max:12', $test['code']);
+        $this->assertStringContainsString('max:12', $test['code']);
     }
 
     public function testGetRulesCanIncludeId()
     {
         $test = $this->ruleGenerator->getRules('table', Null, Null, 15);
-        $this->assertContains('15', $test['code']);
+        $this->assertStringContainsString('15', $test['code']);
     }
 
     public function testGetRulesWorksForModels()
     {
         $model = new ModelStub();
 
-        $this->assertEquals($this->ruleGenerator->getTableRules('foo'), 
+        $this->assertEquals($this->ruleGenerator->getTableRules('foo'),
             $this->ruleGenerator->getTableRules($model));
 
-        $this->assertNotEquals($this->ruleGenerator->getTableRules('table'), 
+        $this->assertNotEquals($this->ruleGenerator->getTableRules('table'),
             $this->ruleGenerator->getTableRules($model));
 
-        $this->assertEquals($this->ruleGenerator->getRules('foo', 'col1'), 
+        $this->assertEquals($this->ruleGenerator->getRules('foo', 'col1'),
             $this->ruleGenerator->getRules($model, 'col1'));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testGetRulesFailsWhenGivenBadValue()
     {
-        $foo = $this->ruleGenerator->getTableRules(1); 
+        $this->expectException(InvalidArgumentException::class);
+        $foo = $this->ruleGenerator->getTableRules(1);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testSendBadDataToGetRules()
     {
+        $this->expectException(InvalidArgumentException::class);
         $test = $this->ruleGenerator->getRules(Null, 'col');
     }
 
     public function testStaticMake()
     {
-        // ValidationRuleGenerator::make();
+        // Generator::make();
         $test = $this->ruleGenerator;
         $t2   = $this->ruleGenerator->make();
         $this->assertEquals($test, $t2);
     }
 
-
-
-
-// Protected helper functions ---------------------------------------
-
-    protected function setupApp()
-    {
-        $app = m::mock('AppMock');
-        $app->shouldReceive('instance')->once()->andReturn($app);
-        Illuminate\Support\Facades\Facade::setFacadeApplication($app);
-    }
-
-    protected function setupSchemaManager()
-    {
-        Illuminate\Support\Facades\DB::swap($db = m::mock('DBMock'));
-        $db->shouldReceive('connection')->andReturn(new DbConnectionStub);
-    }
-
-    private function columnRules($col, $overrides = array())
-    {
-        return $this->ruleGenerator->getColumnRules('foo', $col, $overrides);
-    }
-
-    private function tableRules($overrides = array())
-    {
-        return $this->ruleGenerator->getTableRules('foo', $overrides);
-    }
-
 }
-
-
-
 
 
 
@@ -263,43 +216,43 @@ class ValidationRuleGeneratorTest extends PHPUnit_Framework_TestCase
 class DbConnectionStub
 {
     public function getDoctrineSchemaManager() { return new SchemaManagerStub; }
-    
-    public function getDoctrineColumn($table, $col) 
-    { 
+
+    public function getDoctrineColumn($table, $col)
+    {
         if ($col=='code')
             return new SchemaColCodeStub;
         elseif ($col == 'col1')
-            return new SchemaCol1Stub; 
+            return new SchemaCol1Stub;
         elseif ($col == 'col2')
             return new SchemaCol2Stub;
 
-        throw new \InvalidArgumentException; 
+        throw new \InvalidArgumentException;
     }
 }
 
-class SchemaManagerStub 
+class SchemaManagerStub
 {
-    public function listTableNames() 
-    { 
-        return array('foo', 'bar'); 
+    public function listTableNames()
+    {
+        return array('foo', 'bar');
     }
 
-    public function listTableColumns($table) 
-    { 
+    public function listTableColumns($table)
+    {
         return array(
-            'col1' => new SchemaCol1Stub, 
+            'col1' => new SchemaCol1Stub,
             'col2' => new SchemaCol2Stub,
             'code' => new SchemaColCodeStub,
-        ); 
+        );
     }
 
-    public function listTableIndexes($table) 
-    { 
+    public function listTableIndexes($table)
+    {
         return array(
-            'primary'=> new SchemaIndexStub, 
+            'primary'=> new SchemaIndexStub,
             'code' => new SchemaIndexCodeStub,
             'col2_index'=> new SchemaIndexCol2Stub,
-        ); 
+        );
     }
 }
 
@@ -349,7 +302,7 @@ class SchemaIndexCodeStub
 {
     public function getName() { return 'code_index'; }
     public function getColumns() { return array('code'); }
-    public function isUnique() { return True; }    
+    public function isUnique() { return True; }
 }
 
 class ModelStub
