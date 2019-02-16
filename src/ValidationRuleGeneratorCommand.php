@@ -1,12 +1,13 @@
 <?php
 
-namespace Kalani\ValidationRuleGenerator;
+namespace Jijoel\ValidationRuleGenerator;
 
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use InvalidArgumentException;
 
-class ValidationRuleGeneratorCommand extends Command 
+class ValidationRuleGeneratorCommand extends Command
 {
 
     /**
@@ -54,18 +55,18 @@ class ValidationRuleGeneratorCommand extends Command
             var_export($this->generator->getRules($table));
             return;
         }
-    
+
         $model = $this->option('model');
         if ($model) {
-            $instance = new $model;   
+            $instance = new $model;
             var_export($this->generator->getRules(
-                $instance->getTable(), 
+                $instance->getTable(),
                 Null,
                 $model::$rules));
             return;
         }
 
-        throw new \InvalidArgumentException('What would you like to generate rules for?');
+        throw new InvalidArgumentException('What would you like to generate rules for?');
     }
 
     /**

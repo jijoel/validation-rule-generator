@@ -1,10 +1,12 @@
-<?php 
+<?php
 
-namespace Kalani\ValidationRuleGenerator;
+namespace Jijoel\ValidationRuleGenerator;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\AliasLoader;
 
-class ValidationRuleGeneratorServiceProvider extends ServiceProvider {
+class ValidationRuleGeneratorServiceProvider extends ServiceProvider
+{
 
 	/**
 	 * Indicates if loading of the provider is deferred.
@@ -32,10 +34,13 @@ class ValidationRuleGeneratorServiceProvider extends ServiceProvider {
 
 		$this->app->booting(function()
 		{
-			$loader = \Illuminate\Foundation\AliasLoader::getInstance();
-			$loader->alias('ValidationRuleGenerator', 
-				'Kalani\ValidationRuleGenerator\Facades\ValidationRuleGenerator');
-		});				
+			$loader = AliasLoader::getInstance();
+
+			$loader->alias(
+				'ValidationRuleGenerator',
+				ValidationRuleGeneratorFacade::class
+			);
+		});
 	}
 
 	protected function registerCommand()

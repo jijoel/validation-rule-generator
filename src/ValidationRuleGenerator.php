@@ -1,7 +1,8 @@
 <?php
 
-namespace Kalani\ValidationRuleGenerator;
+namespace Jijoel\ValidationRuleGenerator;
 
+use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
 
 class ValidationRuleGenerator
@@ -10,18 +11,18 @@ class ValidationRuleGenerator
 
     public function __construct($schemaManager = Null)
     {
-        $this->schemaManager = $schemaManager ? : 
+        $this->schemaManager = $schemaManager ? :
             DB::connection()->getDoctrineSchemaManager();
     }
 
     /**
      * Returns rules for the selected object
-     * 
+     *
      * @param  string|object $table  The table or model for which to get rules
-     * @param  string $column        The column for which to get rules   
+     * @param  string $column        The column for which to get rules
      * @param  array $rules          Manual overrides for the automatically-generated rules
      * @param  integer $id           An id number to ignore for unique fields (current id)
-     * 
+     *
      * @return array                 Array of calculated rules for the given table/model
      */
     public function getRules($table=Null, $column=Null, $rules=Null, $id=Null)
@@ -29,14 +30,14 @@ class ValidationRuleGenerator
         if ( ! $table == Null && $column == Null) {
             $return = $this->getTableRules($table, $rules);
             return ($id == Null) ? $return : $this->getUniqueRules($return, $id);
-        } elseif ( ! $table == Null && ! $column == Null ) {            
+        } elseif ( ! $table == Null && ! $column == Null ) {
             $return = $this->getColumnRules($table, $column, $rules);
             return ($id == Null) ? $return : $this->getUniqueRules($return, $id);
         } elseif ($table == Null && $column == Null && $rules == Null && $id == Null) {
             return $this->getAllTableRules();
         }
 
-        throw new \InvalidArgumentException;
+        throw new InvalidArgumentException;
     }
 
     public static function make()
@@ -49,7 +50,7 @@ class ValidationRuleGenerator
     /**
      * Return the DB-specific rules from all tables in the database
      * (this does not contain any user-overrides)
-     * 
+     *
      * @return array   An associative array of columns and delimited string of rules
      */
     public function getAllTableRules()
@@ -62,20 +63,20 @@ class ValidationRuleGenerator
         }
         return $rules;
     }
-    
+
     /**
      * Returns all rules for a given table
-     * 
+     *
      * @param  string|object $table  The name of the table to analyze
      * @param  array  $rules    (optional) Additional (user) rules to include
-     *                          These will override the automatically generated rules 
+     *                          These will override the automatically generated rules
      * @return array  An associative array of columns and delimited string of rules
      */
     public function getTableRules($table, $rules = Null)
     {
         $table = $this->getTableName($table);
 
-        $tableRules = $this->getTableRuleArray($table);        
+        $tableRules = $this->getTableRuleArray($table);
         if (is_null($rules)) {
             return $this->implodeTableRules($tableRules);
         }
@@ -87,10 +88,10 @@ class ValidationRuleGenerator
 
     /**
      * Returns all of the rules for a given table/column
-     * 
-     * @param  string $table    Name of the table which contains the column 
+     *
+     * @param  string $table    Name of the table which contains the column
      * @param  string $column   Name of the column for which to get rules
-     * @param  string|array $rules    Additional information or overrides. 
+     * @param  string|array $rules    Additional information or overrides.
      * @return string           The final calculated rules for this column
      */
     public function getColumnRules($table, $column, $rules = Null)
@@ -131,7 +132,7 @@ class ValidationRuleGenerator
      * Given a set of rules, and an id for a current record,
      * returns a string with any unique rules skipping the current record.
      *
-     * @param  string         $rules    A laravel rule string 
+     * @param  string         $rules    A laravel rule string
      * @param  string|integer $id       The id to skip
      * @param  string         $idColumn The name of the column
      *
@@ -170,7 +171,7 @@ class ValidationRuleGenerator
 
     /**
      * Split rules for a single field into an array
-     * 
+     *
      * @param  string|array $rules  Rules in the format 'rule:attribute|rule|rule'
      * @return array                Associative array of all rules
      */
@@ -187,10 +188,10 @@ class ValidationRuleGenerator
 
     /**
      * Given a nested array of columns and individual rules,
-     * return an array of columns with a delimited string of rules. 
-     * 
-     * @param  array $ruleArray 
-     * @return array            
+     * return an array of columns with a delimited string of rules.
+     *
+     * @param  array $ruleArray
+     * @return array
      */
     protected function implodeTableRules($ruleArray)
     {
@@ -202,11 +203,11 @@ class ValidationRuleGenerator
     }
 
     /**
-     * Given an array of individual rules (eg, ['min'=>2,'exists'=>'countries,code','unique'], 
+     * Given an array of individual rules (eg, ['min'=>2,'exists'=>'countries,code','unique'],
      * return a string delimited by a pipe (eg: 'min:2|exists:countries,code|unique')
-     * 
-     * @param  array $ruleArray 
-     * @return string           
+     *
+     * @param  array $ruleArray
+     * @return string
      */
     protected function implodeColumnRules($ruleArray)
     {
@@ -241,8 +242,8 @@ class ValidationRuleGenerator
 
     /**
      * Returns an array of rules for a given database table
-     * 
-     * @param  string $table    Name of the table for which to get rules 
+     *
+     * @param  string $table    Name of the table for which to get rules
      * @return array            rules in a nested associative array
      */
     protected function getTableRuleArray($table)
@@ -254,7 +255,7 @@ class ValidationRuleGenerator
             // Add generated rules from the database for this column, if any found
             $columnRules = $this->getColumnRuleArray($column);
             if ($columnRules) {
-                $rules[$colName] = $this->getColumnRuleArray($column);                
+                $rules[$colName] = $this->getColumnRuleArray($column);
             }
 
             // Add index rules for this column, if any are found
@@ -268,7 +269,7 @@ class ValidationRuleGenerator
 
     /**
      * Returns an array of rules for a given database column, based on field information
-     * 
+     *
      * @param  Doctrine\DBAL\Schema\Column $col     A database column object (from Doctrine)
      * @return array                                An array of rules for this column
      */
@@ -294,10 +295,10 @@ class ValidationRuleGenerator
 
     /**
      * Determine whether a given column should include a 'unique' flag
-     * 
-     * @param  string $table    
-     * @param  string $column 
-     * @return array         
+     *
+     * @param  string $table
+     * @param  string $column
+     * @return array
      */
     protected function getIndexRuleArray($table, $column)
     {
@@ -322,7 +323,7 @@ class ValidationRuleGenerator
         if (is_object($table) && method_exists($table, 'getTable'))
             return $table->getTable();
 
-        throw new \InvalidArgumentException;
+        throw new InvalidArgumentException;
     }
 }
 
