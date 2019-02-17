@@ -10,10 +10,12 @@ class Generator
 {
     // use DetectsApplicationNamespace;
 
+    protected $combine;
     protected $schemaManager;
 
     public function __construct($schemaManager = null)
     {
+        $this->combine = new RuleCombiner;
         $this->schemaManager = $schemaManager ?:
             DB::connection()->getDoctrineSchemaManager();
     }
@@ -60,7 +62,7 @@ class Generator
      */
     public function getAllTableRules()
     {
-        $rules = array();
+        $rules = [];
 
         $tables = $this->getTableNames();
         foreach($tables as $table){
@@ -80,7 +82,7 @@ class Generator
         // $namespace = $this->getAppNamespace();
 
         $table = $instance->getTable();
-        $_rules = $this->combineRules($instance::$rules ?? [], $rules);
+        $_rules = $this->combine->tables($instance::$rules ?? [], $rules);
 
         return ($column)
             ? $this->getColumnRules($table, $column, $_rules)
@@ -98,18 +100,6 @@ class Generator
         return new $modelClass;
     }
 
-    private function combineRules($set1, $set2)
-    {
-        if (!$set2 || !count($set2))  return $set1;
-        if (!$set1 || !count($set1))  return $set2;
-
-        $set1Array = $this->splitTableRules($set1);
-        $set2Array = $this->splitTableRules($set2);
-        $merged = array_replace_recursive($set1Array, $set2Array);
-
-        return $this->joinTableRules($merged);
-    }
-
     /**
      * Returns all rules for a given table
      *
@@ -121,13 +111,8 @@ class Generator
     public function getTableRules($table, $rules = null)
     {
         $tableRules = $this->getTableRuleArray($table);
-        if (is_null($rules)) {
-            return $this->joinTableRules($tableRules);
-        }
 
-        $userRules = $this->splitTableRules($rules);
-        $merged = array_replace_recursive($tableRules, $userRules);
-        return $this->joinTableRules($merged);
+        return $this->combine->tables($rules, $tableRules);
     }
 
     /**
@@ -148,13 +133,7 @@ class Generator
         $indexRuleArray = $this->getIndexRuleArray($table, $column);
         $merged = array_merge($dbRuleArray, $indexRuleArray);
 
-        if (is_null($rules)) {
-            return $this->joinColumnRules($merged);
-        }
-
-        $userRuleArray = $this->splitColumnRules($rules);
-        $merged = array_merge($merged, $userRuleArray);
-        return $this->joinColumnRules($merged);
+        return $this->combine->columns($merged, $rules);
     }
 
 
@@ -167,7 +146,7 @@ class Generator
             return $this->getColumnUniqueRules($rules, $id, $idColumn);
         }
 
-        $return = array();
+        $return = [];
         foreach ($rules as $key => $value) {
             $return[$key] = $this->getColumnUniqueRules($value, $id, $idColumn);
         }
@@ -200,91 +179,6 @@ class Generator
         return substr($rules, 0, $pos) . ',' . $id . ',' . $idColumn . substr($rules, $pos);
     }
 
-    /**
-     * Split a given set of rules into an associative array.
-     *
-     * @param  string|array  $rules
-     * @return array
-     */
-    protected function splitTableRules($rules)
-    {
-        $ruleArray = array();
-        foreach($rules as $field => $value) {
-            $ruleArray[$field] = $this->splitColumnRules($value);
-        }
-        return $ruleArray;
-    }
-
-    /**
-     * Split rules for a single field into an array
-     *
-     * @param  string|array $rules  Rules in the format 'rule:attribute|rule|rule'
-     * @return array                Associative array of all rules
-     */
-    protected function splitColumnRules($rules)
-    {
-        $columnRules = array();
-        $columnRuleArray = is_string($rules) ? explode('|', $rules) : $rules;
-        foreach ($columnRuleArray as $columnRule) {
-            list($key, $param) = $this->parseRule($columnRule);
-            $columnRules[$key] = $param;
-        }
-        return $columnRules;
-    }
-
-    /**
-     * Given a nested array of columns and individual rules,
-     * return an array of columns with a delimited string of rules.
-     *
-     * @param  array $ruleArray
-     * @return array
-     */
-    protected function joinTableRules($ruleArray)
-    {
-        $rules = array();
-        foreach($ruleArray as $column => $data) {
-            $rules[$column] = $this->joinColumnRules($data);
-        }
-        return $rules;
-    }
-
-    /**
-     * Given an array of individual rules (eg, ['min'=>2,'exists'=>'countries,code','unique'],
-     * return a string delimited by a pipe (eg: 'min:2|exists:countries,code|unique')
-     *
-     * @param  array $ruleArray
-     * @return string
-     */
-    protected function joinColumnRules($ruleArray)
-    {
-        $rules = '';
-        foreach($ruleArray as $key => $value) {
-            if($value!==null) {
-                $rules .= $key .':'. $value . '|';
-            } else {
-                $rules .= $key .'|';
-            }
-        }
-        return substr($rules,0,-1);
-    }
-
-    /**
-     * Parse an individual rule, in the form:
-     * 'rule:attribute', or 'rule'
-     *
-     * @param  string  $rule
-     * @return array            array of [rule => attribute]
-     */
-    protected function parseRule($rule)
-    {
-        $attribute = null;
-        if (strpos($rule, ':') !== false)
-        {
-            list($rule, $attribute) = explode(':', $rule, 2);
-        }
-
-        return array($rule, $attribute);
-    }
 
     /**
      * Returns an array of rules for a given database table
@@ -327,7 +221,7 @@ class Generator
      */
     protected function getColumnRuleArray($col)
     {
-        $colArray = array();
+        $colArray = [];
         $type = $col->getType();
         if ($type=='String') {
             if( $len = $col->getLength() ) {
@@ -355,7 +249,7 @@ class Generator
     protected function getIndexRuleArray($table, $column)
     {
         // TODO: (maybe) Handle rules for indexes that span multiple columns
-        $indexArray = array();
+        $indexArray = [];
         $indexList = $this->schemaManager->listTableIndexes($table);
         foreach($indexList as $item) {
             $cols = $item->getColumns();
