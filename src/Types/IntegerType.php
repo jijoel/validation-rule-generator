@@ -5,21 +5,22 @@ namespace Jijoel\ValidationRuleGenerator\Types;
 
 class IntegerType
 {
+    use _Common;
+    use _Numeric;
+
     public $col;
+    public $rules = [];
 
     public function __invoke($col)
     {
-        $colArray = [];
+        $this->setCol($col);
 
-        // $colArray['integer']=null;
-        if ($col->getUnsigned()) {
-            $colArray['min'] = '0';
-        }
+        $this->nullable();
+        $this->integer();
+        $this->min(-2147483648);
+        $this->max(2147483647, 4294967295);
 
-        if ($col->getNotNull()) {
-            $colArray['required']=null;
-        }
-
-        return $colArray;
+        return $this->rules;
     }
+
 }

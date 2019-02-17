@@ -3,10 +3,10 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class DateTimeType
 {
     use _Common;
-    use _Strings;
+    use _Dates;
 
     public $col;
     public $rules = [];
@@ -16,7 +16,7 @@ class StringType
         $this->setCol($col);
 
         $this->nullable();
-        $this->length();
+        $this->date();
 
         return $this->rules;
     }

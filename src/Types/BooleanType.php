@@ -3,10 +3,9 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class BooleanType
 {
     use _Common;
-    use _Strings;
 
     public $col;
     public $rules = [];
@@ -16,9 +15,14 @@ class StringType
         $this->setCol($col);
 
         $this->nullable();
-        $this->length();
+        $this->boolean();
 
         return $this->rules;
+    }
+
+    protected function boolean()
+    {
+        $this->rules['boolean'] = null;
     }
 
 }

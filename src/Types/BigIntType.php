@@ -3,10 +3,10 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class BigIntType
 {
     use _Common;
-    use _Strings;
+    use _Numeric;
 
     public $col;
     public $rules = [];
@@ -16,9 +16,16 @@ class StringType
         $this->setCol($col);
 
         $this->nullable();
-        $this->length();
+        $this->numeric();
+        $this->unsignedMin();
 
         return $this->rules;
+    }
+
+    protected function unsignedMin()
+    {
+        if ($this->col->getUnsigned())
+            $this->rules['min'] = 0;
     }
 
 }

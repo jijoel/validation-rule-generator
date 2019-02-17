@@ -99,3 +99,11 @@ If you'd like validation rules for one column:
     $rules = ValidationRuleGenerator::getColumnRules($table, $column);
 
 
+# Development
+
+We are using mysql for database testing because sqlite does not include as many data types. In mysql, create a database, user, and password:
+
+    CREATE DATABASE test_lrg;
+    CREATE USER 'test_lrg'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Password1234!';
+    GRANT ALL ON test_lrg.* TO 'test_lrg'@'localhost';
+

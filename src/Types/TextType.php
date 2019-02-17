@@ -3,7 +3,7 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class TextType
 {
     use _Common;
     use _Strings;

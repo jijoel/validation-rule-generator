@@ -3,7 +3,7 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class JsonType
 {
     use _Common;
     use _Strings;
@@ -16,9 +16,14 @@ class StringType
         $this->setCol($col);
 
         $this->nullable();
-        $this->length();
+        $this->json();
 
         return $this->rules;
+    }
+
+    protected function json()
+    {
+        $this->rules['json'] = null;
     }
 
 }

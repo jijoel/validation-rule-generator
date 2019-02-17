@@ -3,20 +3,20 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class DateType
 {
     use _Common;
-    use _Strings;
+    use _Dates;
 
     public $col;
     public $rules = [];
 
     public function __invoke($col)
     {
-        $this->setCol($col);
+        $this->col = $col;
 
         $this->nullable();
-        $this->length();
+        $this->date();
 
         return $this->rules;
     }

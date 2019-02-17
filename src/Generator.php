@@ -197,8 +197,9 @@ class Generator
 
             // Add index rules for this column, if any are found
             $indexRules = $this->getIndexRuleArray($table, $colName);
-            if ($indexRules) {
-                $rules[$colName] = array_merge($rules[$colName], $indexRules);
+
+            if ($columnRules && $indexRules) {
+                $rules[$colName] = array_merge($columnRules, $indexRules);
             }
         }
 
@@ -217,10 +218,16 @@ class Generator
 
         $className = __NAMESPACE__."\Types\\{$type}Type";
 
-        if (class_exists($className))
-            return (new $className)($col);
+        try {
+            if (class_exists($className))
+                return (new $className)($col);
+        } catch(Types\SkipThisColumn $e) { return []; }
 
-        // do not return anything for non-implemented classes
+        // catch (\Exception $e) {
+        //     return ['Error: '.$type.' '.$e->getMessage()];
+        // }
+            // do not return anything for non-implemented classes
+        return ['>>>'.$className];
     }
 
     /**

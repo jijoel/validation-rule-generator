@@ -3,10 +3,10 @@
 namespace Jijoel\ValidationRuleGenerator\Types;
 
 
-class StringType
+class BlobType
 {
     use _Common;
-    use _Strings;
+    // use _Numeric;
 
     public $col;
     public $rules = [];
@@ -16,7 +16,6 @@ class StringType
         $this->setCol($col);
 
         $this->nullable();
-        $this->length();
 
         return $this->rules;
     }
