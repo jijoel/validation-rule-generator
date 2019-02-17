@@ -532,12 +532,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "546781c354af2598f5aeb110a778ff954fa0ebfb"
+                "reference": "aa1cecda3c0da6fd7c59aff19b442e835fd6cde5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/546781c354af2598f5aeb110a778ff954fa0ebfb",
-                "reference": "546781c354af2598f5aeb110a778ff954fa0ebfb",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/aa1cecda3c0da6fd7c59aff19b442e835fd6cde5",
+                "reference": "aa1cecda3c0da6fd7c59aff19b442e835fd6cde5",
                 "shasum": ""
             },
             "require": {
@@ -670,7 +670,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2019-02-16T14:47:46+00:00"
+            "time": "2019-02-17T14:58:03+00:00"
         },
         {
             "name": "league/flysystem",
@@ -1762,12 +1762,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-kernel.git",
-                "reference": "d341dfdeddff63bdcf7b35c89d3001eeabb4cfac"
+                "reference": "8dcd273733e789ffc3ff9b847bd3336bc106c3df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-kernel/zipball/d341dfdeddff63bdcf7b35c89d3001eeabb4cfac",
-                "reference": "d341dfdeddff63bdcf7b35c89d3001eeabb4cfac",
+                "url": "https://api.github.com/repos/symfony/http-kernel/zipball/8dcd273733e789ffc3ff9b847bd3336bc106c3df",
+                "reference": "8dcd273733e789ffc3ff9b847bd3336bc106c3df",
                 "shasum": ""
             },
             "require": {
@@ -1843,7 +1843,7 @@
             ],
             "description": "Symfony HttpKernel Component",
             "homepage": "https://symfony.com",
-            "time": "2019-02-08T13:07:06+00:00"
+            "time": "2019-02-17T09:56:33+00:00"
         },
         {
             "name": "symfony/mime",
@@ -3583,12 +3583,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "455b867582c284081103d2b434dd97ca9efc807a"
+                "reference": "36057af90ae6e67f4a80e1d4a9a71187e346284d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/455b867582c284081103d2b434dd97ca9efc807a",
-                "reference": "455b867582c284081103d2b434dd97ca9efc807a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/36057af90ae6e67f4a80e1d4a9a71187e346284d",
+                "reference": "36057af90ae6e67f4a80e1d4a9a71187e346284d",
                 "shasum": ""
             },
             "require": {
@@ -3657,7 +3657,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2019-02-15T16:32:37+00:00"
+            "time": "2019-02-17T08:22:10+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",

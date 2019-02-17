@@ -23,6 +23,11 @@
             "Jijoel\\ValidationRuleGenerator\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\Models\\": "tests/models"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
