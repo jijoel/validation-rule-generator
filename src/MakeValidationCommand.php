@@ -33,18 +33,14 @@ class MakeValidationCommand extends Command
      *
      * @return void
      */
-    public function __construct($generator)
+    public function __construct(Generator $generator)
     {
-        $this->generator = $generator;
         parent::__construct();
+
+        $this->generator = $generator;
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
-    public function fire()
+    public function handle()
     {
         if ($this->option('all')) {
             var_export($this->generator->getRules());
@@ -53,6 +49,7 @@ class MakeValidationCommand extends Command
 
         $table = $this->option('table');
         if ($table) {
+            echo $table . ' '.str_repeat('-',min(0,60-strlen($table))).PHP_EOL;
             var_export($this->generator->getRules($table));
             return;
         }
@@ -60,6 +57,7 @@ class MakeValidationCommand extends Command
         $model = $this->option('model');
         if ($model) {
             $instance = new $model;
+            echo $model . ' '.str_repeat('-',min(0,60-strlen($model))).PHP_EOL;
             var_export($this->generator->getRules(
                 $instance->getTable(),
                 Null,
@@ -67,19 +65,7 @@ class MakeValidationCommand extends Command
             return;
         }
 
-        throw new InvalidArgumentException('What would you like to generate rules for?');
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments()
-    {
-        return array(
-            // array('model', InputArgument::OPTIONAL, 'The model for which you would like to generate rules.'),
-        );
+        $this->error('Please specify table or model to generate');
     }
 
     /**

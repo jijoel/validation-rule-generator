@@ -248,7 +248,9 @@ class Generator
      */
     protected function getTableRuleArray($table)
     {
+        $rules = [];
         $columns = $this->schemaManager->listTableColumns($table);
+
         foreach($columns as $column) {
             $colName = $column->getName();
 
@@ -264,6 +266,7 @@ class Generator
                 $rules[$colName] = array_merge($rules[$colName], $indexRules);
             }
         }
+
         return $rules;
     }
 
