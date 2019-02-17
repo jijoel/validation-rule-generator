@@ -2,9 +2,9 @@
 
 namespace Jijoel\ValidationRuleGenerator;
 
-use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Facade as LaravelFacade;
 
-class ValidationRuleGeneratorFacade extends Facade
+class Facade extends LaravelFacade
 {
 
   /**

@@ -2,10 +2,11 @@
 
 namespace Jijoel\ValidationRuleGenerator;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Illuminate\Foundation\AliasLoader;
 
-class ValidationRuleGeneratorServiceProvider extends ServiceProvider
+
+class ServiceProvider extends LaravelServiceProvider
 {
 
 	/**
@@ -28,9 +29,10 @@ class ValidationRuleGeneratorServiceProvider extends ServiceProvider
 
 	protected function registerGenerator()
 	{
-		$this->app['validation-rule-generator'] = $this->app->share(function($app){
-			return new ValidationRuleGenerator;
-		});
+        $this->app->singleton(Generator::class, function ($app) {
+            return new Generator;
+        });
+
 
 		$this->app->booting(function()
 		{
@@ -38,19 +40,18 @@ class ValidationRuleGeneratorServiceProvider extends ServiceProvider
 
 			$loader->alias(
 				'ValidationRuleGenerator',
-				ValidationRuleGeneratorFacade::class
+				Facade::class
 			);
 		});
 	}
 
 	protected function registerCommand()
 	{
-		$this->app['validation-rule-generator-command'] = $this->app->share(function($app){
-			$generator = new ValidationRuleGenerator;
-			return new ValidationRuleGeneratorCommand($generator);
-		});
-
-		$this->commands('validation-rule-generator-command');
+	    if ($this->app->runningInConsole()) {
+	        $this->commands([
+	            MakeValidationCommand::class,
+	        ]);
+	    }
 	}
 
 	/**
