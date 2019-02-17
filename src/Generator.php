@@ -4,14 +4,17 @@ namespace Jijoel\ValidationRuleGenerator;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
+// use Illuminate\Console\DetectsApplicationNamespace;
 
 class Generator
 {
+    // use DetectsApplicationNamespace;
+
     protected $schemaManager;
 
     public function __construct($schemaManager = null)
     {
-        $this->schemaManager = $schemaManager ? :
+        $this->schemaManager = $schemaManager ?:
             DB::connection()->getDoctrineSchemaManager();
     }
 
@@ -27,17 +30,19 @@ class Generator
      */
     public function getRules($table=null, $column=null, $rules=null, $id=null)
     {
-        if ( ! $table == null && $column == null) {
-            $return = $this->getTableRules($table, $rules);
-            return ($id == null) ? $return : $this->getUniqueRules($return, $id);
-        } elseif ( ! $table == null && ! $column == null ) {
-            $return = $this->getColumnRules($table, $column, $rules);
-            return ($id == null) ? $return : $this->getUniqueRules($return, $id);
-        } elseif ($table == null && $column == null && $rules == null && $id == null) {
-            return $this->getAllTableRules();
-        }
+        if (is_null($table) && ! is_null($column))
+            throw new InvalidArgumentException;
 
-        throw new InvalidArgumentException;
+        if (is_object($table))
+            return $this->getUniqueRules($this->getModelRules($table, $rules, $column), $id);
+
+        if (is_null($table))
+            return $this->getAllTableRules();
+
+        if (is_null($column))
+            return $this->getUniqueRules($this->getTableRules($table, $rules), $id);
+
+        return $this->getUniqueRules($this->getColumnRules($table, $column, $rules), $id);
     }
 
     public static function make()
@@ -57,11 +62,52 @@ class Generator
     {
         $rules = array();
 
-        $tables = $this->schemaManager->listTableNames();
+        $tables = $this->getTableNames();
         foreach($tables as $table){
             $rules[$table] = $this->getTableRules($table);
         }
         return $rules;
+    }
+
+    private function getTableNames()
+    {
+        return $this->schemaManager->listTableNames();
+    }
+
+    public function getModelRules($model, $rules=[], $column=null)
+    {
+        $instance = $this->getModelInstance($model);
+        // $namespace = $this->getAppNamespace();
+
+        $table = $instance->getTable();
+        $_rules = $this->combineRules($instance::$rules ?? [], $rules);
+
+        return ($column)
+            ? $this->getColumnRules($table, $column, $_rules)
+            : $this->getTableRules($table, $_rules);
+    }
+
+    private function getModelInstance($model)
+    {
+        if (is_object($model))  return $model;
+
+        // $namespace = $this->getAppNamespace();
+
+        $modelClass = str_replace('/', '\\', $model);
+
+        return new $modelClass;
+    }
+
+    private function combineRules($set1, $set2)
+    {
+        if (!$set2 || !count($set2))  return $set1;
+        if (!$set1 || !count($set1))  return $set2;
+
+        $set1Array = $this->splitTableRules($set1);
+        $set2Array = $this->splitTableRules($set2);
+        $merged = array_replace_recursive($set1Array, $set2Array);
+
+        return $this->joinTableRules($merged);
     }
 
     /**
@@ -74,16 +120,14 @@ class Generator
      */
     public function getTableRules($table, $rules = null)
     {
-        $table = $this->getTableName($table);
-
         $tableRules = $this->getTableRuleArray($table);
         if (is_null($rules)) {
-            return $this->implodeTableRules($tableRules);
+            return $this->joinTableRules($tableRules);
         }
 
-        $userRules = $this->explodeTableRules($rules);
+        $userRules = $this->splitTableRules($rules);
         $merged = array_replace_recursive($tableRules, $userRules);
-        return $this->implodeTableRules($merged);
+        return $this->joinTableRules($merged);
     }
 
     /**
@@ -99,24 +143,26 @@ class Generator
         // TODO: Work with foreign keys for exists:table,column statements
 
         // Get an array of rules based on column data
-        $table = $this->getTableName($table);
         $col = DB::connection()->getDoctrineColumn($table, $column);
         $dbRuleArray = $this->getColumnRuleArray($col);
         $indexRuleArray = $this->getIndexRuleArray($table, $column);
         $merged = array_merge($dbRuleArray, $indexRuleArray);
 
         if (is_null($rules)) {
-            return $this->implodeColumnRules($merged);
+            return $this->joinColumnRules($merged);
         }
 
-        $userRuleArray = $this->explodeColumnRules($rules);
+        $userRuleArray = $this->splitColumnRules($rules);
         $merged = array_merge($merged, $userRuleArray);
-        return $this->implodeColumnRules($merged);
+        return $this->joinColumnRules($merged);
     }
 
 
     public function getUniqueRules($rules, $id, $idColumn='id')
     {
+        if (is_null($id))
+            return $rules;
+
         if (! is_array($rules)) {
             return $this->getColumnUniqueRules($rules, $id, $idColumn);
         }
@@ -155,16 +201,16 @@ class Generator
     }
 
     /**
-     * Explode a given set of rules for a given table into an associative array of rules.
+     * Split a given set of rules into an associative array.
      *
      * @param  string|array  $rules
      * @return array
      */
-    protected function explodeTableRules($rules)
+    protected function splitTableRules($rules)
     {
         $ruleArray = array();
         foreach($rules as $field => $value) {
-            $ruleArray[$field] = $this->explodeColumnRules($value);
+            $ruleArray[$field] = $this->splitColumnRules($value);
         }
         return $ruleArray;
     }
@@ -175,7 +221,7 @@ class Generator
      * @param  string|array $rules  Rules in the format 'rule:attribute|rule|rule'
      * @return array                Associative array of all rules
      */
-    protected function explodeColumnRules($rules)
+    protected function splitColumnRules($rules)
     {
         $columnRules = array();
         $columnRuleArray = is_string($rules) ? explode('|', $rules) : $rules;
@@ -193,11 +239,11 @@ class Generator
      * @param  array $ruleArray
      * @return array
      */
-    protected function implodeTableRules($ruleArray)
+    protected function joinTableRules($ruleArray)
     {
         $rules = array();
         foreach($ruleArray as $column => $data) {
-            $rules[$column] = $this->implodeColumnRules($data);
+            $rules[$column] = $this->joinColumnRules($data);
         }
         return $rules;
     }
@@ -209,7 +255,7 @@ class Generator
      * @param  array $ruleArray
      * @return string
      */
-    protected function implodeColumnRules($ruleArray)
+    protected function joinColumnRules($ruleArray)
     {
         $rules = '';
         foreach($ruleArray as $key => $value) {
@@ -248,6 +294,9 @@ class Generator
      */
     protected function getTableRuleArray($table)
     {
+        if (! is_string($table))
+            throw new InvalidArgumentException;
+
         $rules = [];
         $columns = $this->schemaManager->listTableColumns($table);
 
@@ -290,7 +339,7 @@ class Generator
                 $colArray['min'] = '0';
             }
         }
-        if ($col->getNotnull()) {
+        if ($col->getNotNull()) {
             $colArray['required']=null;
         }
         return $colArray;
@@ -318,15 +367,5 @@ class Generator
         return $indexArray;
     }
 
-    protected function getTableName($table)
-    {
-        if (is_string($table))
-            return $table;
-
-        if (is_object($table) && method_exists($table, 'getTable'))
-            return $table->getTable();
-
-        throw new InvalidArgumentException;
-    }
 }
 

@@ -178,10 +178,10 @@ class ValidationRuleGeneratorTest extends TestCase
         $model = new ModelStub();
 
         $this->assertEquals($this->ruleGenerator->getTableRules('foo'),
-            $this->ruleGenerator->getTableRules($model));
+            $this->ruleGenerator->getRules($model));
 
         $this->assertNotEquals($this->ruleGenerator->getTableRules('table'),
-            $this->ruleGenerator->getTableRules($model));
+            $this->ruleGenerator->getRules($model));
 
         $this->assertEquals($this->ruleGenerator->getRules('foo', 'col1'),
             $this->ruleGenerator->getRules($model, 'col1'));

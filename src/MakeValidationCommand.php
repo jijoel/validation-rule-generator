@@ -57,7 +57,7 @@ class MakeValidationCommand extends Command
         $model = $this->option('model');
         if ($model) {
             echo $model . ' '.str_repeat('-',min(0,60-strlen($model))).PHP_EOL;
-            var_export($this->generator->getModelRules($model, $model::$rules ?? []));
+            var_export($this->generator->getModelRules($model));
             return;
         }
 
