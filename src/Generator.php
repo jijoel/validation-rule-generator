@@ -3,7 +3,6 @@
 namespace Jijoel\ValidationRuleGenerator;
 
 use InvalidArgumentException;
-use Illuminate\Support\Facades\DB;
 // use Illuminate\Console\DetectsApplicationNamespace;
 
 class Generator
@@ -11,13 +10,12 @@ class Generator
     // use DetectsApplicationNamespace;
 
     protected $combine;
-    protected $schemaManager;
+    protected $schema;
 
     public function __construct($schemaManager = null)
     {
         $this->combine = new RuleCombiner;
-        $this->schemaManager = $schemaManager ?:
-            DB::connection()->getDoctrineSchemaManager();
+        $this->schema = new Schema($schemaManager);
     }
 
     /**
@@ -64,16 +62,11 @@ class Generator
     {
         $rules = [];
 
-        $tables = $this->getTableNames();
+        $tables = $this->schema->tables();
         foreach($tables as $table){
             $rules[$table] = $this->getTableRules($table);
         }
         return $rules;
-    }
-
-    private function getTableNames()
-    {
-        return $this->schemaManager->listTableNames();
     }
 
     public function getModelRules($model, $rules=[], $column=null)
@@ -128,10 +121,11 @@ class Generator
         // TODO: Work with foreign keys for exists:table,column statements
 
         // Get an array of rules based on column data
-        $col = DB::connection()->getDoctrineColumn($table, $column);
-        $dbRuleArray = $this->getColumnRuleArray($col);
+        $col = $this->schema->columnData($table, $column);
+
+        $columnRuleArray = $this->getColumnRuleArray($col);
         $indexRuleArray = $this->getIndexRuleArray($table, $column);
-        $merged = array_merge($dbRuleArray, $indexRuleArray);
+        $merged = array_merge($columnRuleArray, $indexRuleArray);
 
         return $this->combine->columns($merged, $rules);
     }
@@ -139,8 +133,7 @@ class Generator
 
     public function getUniqueRules($rules, $id, $idColumn='id')
     {
-        if (is_null($id))
-            return $rules;
+        if (is_null($id))  return $rules;
 
         if (! is_array($rules)) {
             return $this->getColumnUniqueRules($rules, $id, $idColumn);
@@ -192,16 +185,15 @@ class Generator
             throw new InvalidArgumentException;
 
         $rules = [];
-        $columns = $this->schemaManager->listTableColumns($table);
+        $columns = $this->schema->columns($table);
 
         foreach($columns as $column) {
             $colName = $column->getName();
 
             // Add generated rules from the database for this column, if any found
             $columnRules = $this->getColumnRuleArray($column);
-            if ($columnRules) {
-                $rules[$colName] = $this->getColumnRuleArray($column);
-            }
+            if ($columnRules)
+                $rules[$colName] = $columnRules;
 
             // Add index rules for this column, if any are found
             $indexRules = $this->getIndexRuleArray($table, $colName);
@@ -250,7 +242,8 @@ class Generator
     {
         // TODO: (maybe) Handle rules for indexes that span multiple columns
         $indexArray = [];
-        $indexList = $this->schemaManager->listTableIndexes($table);
+        $indexList = $this->schema->indexes($table);
+
         foreach($indexList as $item) {
             $cols = $item->getColumns();
             if(in_array($column, $cols) !== false && count($cols)==1 && $item->isUnique()) {
@@ -258,6 +251,7 @@ class Generator
                 $indexArray['unique'] = $table . ',' . $column;
             }
         }
+
         return $indexArray;
     }
 
