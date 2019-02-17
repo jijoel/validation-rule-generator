@@ -2,7 +2,7 @@
 
 use Orchestra\Testbench\TestCase;
 
-
+/** @group now */
 class ConsoleTest extends TestCase
 {
 

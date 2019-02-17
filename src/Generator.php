@@ -213,22 +213,14 @@ class Generator
      */
     protected function getColumnRuleArray($col)
     {
-        $colArray = [];
-        $type = $col->getType();
-        if ($type=='String') {
-            if( $len = $col->getLength() ) {
-                $colArray['max'] = $len;
-            }
-        } elseif ($type=='Integer') {
-            $colArray['integer']=null;
-            if ($col->getUnsigned()) {
-                $colArray['min'] = '0';
-            }
-        }
-        if ($col->getNotNull()) {
-            $colArray['required']=null;
-        }
-        return $colArray;
+        $type = trim($col->getType(), " \\\t\n\r\0\x0B" );
+
+        $className = __NAMESPACE__."\Types\\{$type}Type";
+
+        if (class_exists($className))
+            return (new $className)($col);
+
+        // do not return anything for non-implemented classes
     }
 
     /**
