@@ -44,11 +44,11 @@ There is already an alias set up for `ValidationRuleGenerator`, but if you would
 
 #### Artisan Command
 
-`php artisan generate:rules` will generate rules for a given table or model. These rules will be printed in a format that you could copy directly to another php file. 
+`php artisan make:validation` will generate rules for a given table or model. These rules will be printed in a format that you could copy directly to another php file.
 
 On the command line, you can run the rule generator as follows:
 
-    php artisan generate:rules [--model="..."] [--table="..."] [--all]
+    php artisan make:validation [--model="..."] [--table="..."] [--all]
 
 One of these parameters is required:
 
@@ -56,10 +56,10 @@ One of these parameters is required:
     --table=table_name  Returns rules for the given table
     --model=ModelName   Returns rules for the given model (with overrides)
 
-If you pass in a `--model` parameter, the rule generator will generate rules for the model's table, and will then merge it with the model's $rules array. In cases of a conflict, the $rules array will take precedence.
+If you pass in a `--model` parameter, the rule generator will generate rules for the model's table, and will then merge it with the model's `$rules` array. In cases of a conflict, the `$rules` array will take precedence.
 
 
-#### Pass directly into validator 
+#### Pass directly into validator
 
 Call `ValidationRuleGenerator::getRules($table|$model, $column, $rules, $id)`:
 
@@ -81,7 +81,7 @@ To validate a table, ignoring a given id:
 
 ### Alternative Usage
 
-To get all of the rules for a table, in your controller: 
+To get all of the rules for a table, in your controller:
 
     $rules = ValidationRuleGenerator::getTableRules($model->getTable(), array($custom_rules));
     $validation = Validator::make(Input::all(), $rules);
