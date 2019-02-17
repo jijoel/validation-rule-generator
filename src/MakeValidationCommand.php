@@ -43,25 +43,21 @@ class MakeValidationCommand extends Command
     public function handle()
     {
         if ($this->option('all')) {
-            var_export($this->generator->getRules());
+            var_export($this->generator->getAllTableRules());
             return;
         }
 
         $table = $this->option('table');
         if ($table) {
             echo $table . ' '.str_repeat('-',min(0,60-strlen($table))).PHP_EOL;
-            var_export($this->generator->getRules($table));
+            var_export($this->generator->getTableRules($table));
             return;
         }
 
         $model = $this->option('model');
         if ($model) {
-            $instance = new $model;
             echo $model . ' '.str_repeat('-',min(0,60-strlen($model))).PHP_EOL;
-            var_export($this->generator->getRules(
-                $instance->getTable(),
-                Null,
-                $model::$rules));
+            var_export($this->generator->getModelRules($model, $model::$rules ?? []));
             return;
         }
 
