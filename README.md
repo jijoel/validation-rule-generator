@@ -1,7 +1,7 @@
 Validation Rule Generator
 =============================
 
-This Laravel 4 package will automatically generate laravel validation rules, based on your schema. It can generate rules for:
+This package will automatically generate laravel validation rules, based on your schema. It can generate rules for:
 
 * All tables in the database
 * One (given) table
@@ -106,4 +106,6 @@ We are using mysql for database testing because sqlite does not include as many 
     CREATE DATABASE test_lrg;
     CREATE USER 'test_lrg'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Password1234!';
     GRANT ALL ON test_lrg.* TO 'test_lrg'@'localhost';
+
+
 
